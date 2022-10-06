@@ -60,8 +60,9 @@ window.addEventListener('DOMContentLoaded', (_event) => {
 });
 const save = (_event) => {
   try {
-    let employeePayrollData = createEmployeePayroll();
-    createAndUpdateStorage(employeePayrollData);
+     //createEmployeePayroll();
+     setEmployeePayrollObject();
+    createAndUpdateStorage();
     window.location.replace(site_properties.home_page);
 
   } catch (e) {
@@ -69,8 +70,23 @@ const save = (_event) => {
   }
 }
 
-const createEmployeePayroll = () => {
+const setEmployeePayrollObject = () => {
+  emplopyeePayrollObj._name = document.querySelector('#name').value;
+  emplopyeePayrollObj._profilePic = getSelectedValues('[name=profile]').pop();
+  emplopyeePayrollObj._gender = getSelectedValues('[name=gender]').pop();
+  emplopyeePayrollObj._department = getSelectedValues('[name=department]');
+  emplopyeePayrollObj._salary = document.querySelector('#salary').value;
+  emplopyeePayrollObj._note = document.querySelector('#notes').value;
+  let date = document.querySelector('#day').value + ' ' + document.querySelector('#month').value + ' ' +
+              document.querySelector('#year').value;
+  emplopyeePayrollObj._startDate = date;
+}
+
+
+const createEmployeePayroll = (id) => {
   let employeePayrollData = new EmployeePayrollData();
+  if (!id) employeePayrollData.id = createNewEmployeeId();
+  else employeePayrollData.id = id;
   try {
     employeePayrollData.name = document.querySelector('#name').value;
   } catch (e) {
@@ -78,7 +94,7 @@ const createEmployeePayroll = () => {
     throw e;
   }
 
-  employeePayrollData._id = createNewEmployeeId();
+  //employeePayrollData._id = createNewEmployeeId();
   employeePayrollData._profilePic = getSelectedValues('[name=profile]').pop();
   employeePayrollData._gender = getSelectedValues('[name=gender]').pop();
   employeePayrollData._department = getSelectedValues('[name=department]');
@@ -101,16 +117,23 @@ const getSelectedValues = (propertyValue) => {
   return selItems;
 }
 
-function createAndUpdateStorage(employeePayrollData) {
+function createAndUpdateStorage(_employeePayrollData) {
 
   let employeePayrollList = JSON.parse(localStorage.getItem('EmployeePayrollList'));
-
-  if (employeePayrollList != undefined) {
-    employeePayrollList.push(employeePayrollData);
+  if (employeePayrollList) {
+    let empPayrollData = employeePayrollList
+                          .find(empData => empData._id == emplopyeePayrollObj._id);
+    if (!empPayrollData){
+      employeePayrollList.push(createEmployeePayroll());
+    }else {
+      const index = employeePayrollList
+                    .map(empData => empData._id)
+                    .indexOf(empPayrollData._id);
+      employeePayrollList.splice(index,1,createEmployeePayroll(empPayrollData._id));
+    }
   } else {
-    employeePayrollList = [employeePayrollData];
+    employeePayrollList = [createEmployeePayroll()];
   }
-  alert(employeePayrollList.toString());
   localStorage.setItem('EmployeePayrollList', JSON.stringify(employeePayrollList));
 }
 
